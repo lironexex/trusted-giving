@@ -25,21 +25,22 @@ body {
 }
 
 .mud-main-content {
-    padding-top: 60px !important;
+    padding-top: 6px !important;
     margin-top: 0 !important;
 }
 
 .landing-container {
-    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     direction: rtl;
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    height: 100%;
+    overflow-y: auto;
 }
 
 .landing-content {
@@ -49,23 +50,16 @@ body {
     padding: 40px 24px;
     text-align: center;
     color: white;
+    width: 100%;
 }
 
-.logo-circle {
-    width: 120px;
-    height: 120px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 28px;
-    border: 2px solid rgba(255,255,255,0.2);
-}
-
-.logo-heart {
-    font-size: 56px;
-}
+    .landing-content img {
+        width: 80%;
+        max-width: 300px;
+        height: auto;
+        display: block;
+        margin: 0 auto 16px auto;
+    }
 
 .landing-title {
     font-size: 36px;
