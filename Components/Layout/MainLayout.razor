@@ -1,33 +1,76 @@
-﻿@inherits LayoutComponentBase
+﻿@* Components/Layout/MainLayout.razor *@
+@inherits LayoutComponentBase
 @inject ThemeService ThemeService
 @inject LanguageService LangService
-@using TrustedGiving.Services
 @implements IDisposable
 
-<div class="app-shell @ThemeService.Theme" dir="@LangService.Direction">
-    <div class="top-bar">
-        <span class="app-brand">Trusted Giving</span>
-        <div class="top-bar-actions">
-            <button class="toggle-btn" @onclick="ToggleLang">
-                @(LangService.IsHebrew ? "EN" : "עב")
-            </button>
-            <button class="toggle-btn" @onclick="ToggleTheme">
-                @(ThemeService.IsDark ? "☀️" : "🌙")
-            </button>
-        </div>
-    </div>
-    <div class="main-content">
+<MudThemeProvider IsDarkMode="@ThemeService.IsDark" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Dense="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Inherit"
+                       Edge="Edge.Start"
+                       OnClick="ToggleMenu" />
+        <MudSpacer />
+        <MudIconButton Icon="@(ThemeService.IsDark? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                       Color="Color.Inherit"
+                       OnClick="ToggleTheme" />
+        <MudButton Color="Color.Inherit" OnClick="ToggleLang">
+            @(LangService.IsHebrew ? "EN" : "עב")
+        </MudButton>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="menuOpen" Elevation="1" Variant="DrawerVariant.Temporary">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">Trusted Giving</MudText>
+        </MudDrawerHeader>
+        <MudNavMenu>
+            <MudNavLink Href="/orgs" Icon="@Icons.Material.Filled.List">
+                @LangService.Get("כל העמותות", "All Nonprofits")
+            </MudNavLink>
+            <MudDivider />
+            <MudNavLink Href="/profile" Icon="@Icons.Material.Filled.Person">
+                @LangService.Get("הפרופיל שלי", "My Profile")
+            </MudNavLink>
+            <MudNavLink Href="/causes" Icon="@Icons.Material.Filled.Favorite">
+                @LangService.Get("המטרות שלי", "My Causes")
+            </MudNavLink>
+            <MudNavLink Href="/donations" Icon="@Icons.Material.Filled.VolunteerActivism">
+                @LangService.Get("התרומות שלי", "My Donations")
+            </MudNavLink>
+            <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">
+                @LangService.Get("הגדרות", "Settings")
+            </MudNavLink>
+            <MudDivider />
+            <MudNavLink Icon="@(ThemeService.IsDark? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                        OnClick="ToggleTheme">
+                @LangService.Get(ThemeService.IsDark ? "מצב בהיר" : "מצב כהה", ThemeService.IsDark ? "Light mode" : "Dark mode")
+            </MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Language" OnClick="ToggleLang">
+                @LangService.Get("English", "עברית")
+            </MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent>
         @Body
-    </div>
-</div>
+    </MudMainContent>
+</MudLayout>
 
 @code {
+    private bool menuOpen = false;
+
     protected override void OnInitialized()
     {
         ThemeService.OnChange += StateHasChanged;
         LangService.OnChange += StateHasChanged;
     }
 
+    private void ToggleMenu() => menuOpen = !menuOpen;
     private void ToggleTheme() => ThemeService.Toggle();
     private void ToggleLang() => LangService.Toggle();
 

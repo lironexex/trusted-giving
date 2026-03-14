@@ -1,49 +1,77 @@
-﻿@page "/orgs"
-@using TrustedGiving.Models
-@using TrustedGiving.Services
+﻿@* Components/Pages/Home.razor *@
+@page "/orgs"
 @inject AmutaService AmutaService
+@inject LanguageService LangService
+@implements IDisposable
 
-<div class="page-container">
-    <div class="header">
-        <h1>עמותות ישראל</h1>
-        <p>מצא עמותות ותרום למטרות שחשובות לך</p>
-        <input class="search-box" type="text" placeholder="חפש עמותה..."
-               @oninput="OnSearch" value="@searchQuery" />
-    </div>
+<div style="padding: 16px; direction: @LangService.Direction">
+
+    <MudText Typo="Typo.h5" Class="mb-2">
+        @LangService.Get("עמותות ישראל", "Israeli Nonprofits")
+    </MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-4" Style="opacity: 0.7">
+        @LangService.Get("מצא עמותות ותרום למטרות שחשובות לך", "Find nonprofits and donate to causes that matter")
+    </MudText>
+
+    <MudTextField @bind-Value="searchQuery"
+                  Placeholder="@LangService.Get("חפש עמותה...", "Search nonprofit...")"
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Variant="Variant.Outlined"
+                  Class="mb-4"
+                  DebounceInterval="500"
+                  OnDebounceIntervalElapsed="OnSearch" />
 
     @if (isLoading)
     {
-        <div class="loading">טוען עמותות...</div>
+        <div style="display: flex; justify-content: center; padding: 48px">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+        </div>
     }
     else if (amutot.Count == 0)
     {
-        <div class="empty">לא נמצאו עמותות</div>
+        <MudText Align="Align.Center" Style="opacity: 0.5; padding: 48px">
+            @LangService.Get("לא נמצאו עמותות", "No nonprofits found")
+        </MudText>
     }
     else
     {
-        <div class="org-list">
+        <MudGrid>
             @foreach (var amuta in amutot)
             {
-                <div class="org-card" @onclick="() => SelectAmuta(amuta)">
-                    <div class="org-card-header">
-                        <span class="org-name">@amuta.NameHebrew</span>
-                        <span class="org-category">@amuta.ActivityCategory</span>
-                    </div>
-                    <div class="org-card-body">
-                        <span class="org-city">📍 @amuta.City</span>
-                        @if (amuta.VolunteerCount.HasValue)
-                        {
-                            <span class="org-volunteers">🙋 @amuta.VolunteerCount מתנדבים</span>
-                        }
-                    </div>
-                </div>
+                <MudItem xs="12">
+                    <MudCard Elevation="2" Style="cursor: pointer" @onclick="() => SelectAmuta(amuta)">
+                        <MudCardContent>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 600; flex: 1">
+                                    @amuta.NameHebrew
+                                </MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                                    @amuta.ActivityCategory
+                                </MudChip>
+                            </div>
+                            <div style="display: flex; gap: 16px; margin-top: 8px; opacity: 0.7">
+                                <MudText Typo="Typo.body2">📍 @amuta.City</MudText>
+                                @if (amuta.VolunteerCount.HasValue)
+                                {
+                                    <MudText Typo="Typo.body2">🙋 @amuta.VolunteerCount @LangService.Get("מתנדבים", "volunteers")</MudText>
+                                }
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
             }
-        </div>
+        </MudGrid>
 
-        <div class="pagination">
-            <button @onclick="PrevPage" disabled="@(currentPage == 0)">◀ הקודם</button>
-            <span>עמוד @(currentPage + 1)</span>
-            <button @onclick="NextPage">הבא ▶</button>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 24px; padding: 16px">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowForward"
+                           Disabled="@(currentPage == 0)"
+                           OnClick="PrevPage"
+                           Color="Color.Primary" />
+            <MudText>@LangService.Get("עמוד", "Page") @(currentPage + 1)</MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                           OnClick="NextPage"
+                           Color="Color.Primary" />
         </div>
     }
 </div>
@@ -67,9 +95,8 @@
         isLoading = false;
     }
 
-    private async Task OnSearch(ChangeEventArgs e)
+    private async Task OnSearch()
     {
-        searchQuery = e.Value?.ToString() ?? "";
         currentPage = 0;
         await LoadAmutot();
     }
@@ -91,6 +118,16 @@
 
     private void SelectAmuta(Amuta amuta)
     {
-        // We'll navigate to detail page here later
+        // Navigate to detail page later
+    }
+
+    protected override void OnInitialized()
+    {
+        LangService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        LangService.OnChange -= StateHasChanged;
     }
 }

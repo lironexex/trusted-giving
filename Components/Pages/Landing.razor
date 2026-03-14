@@ -1,7 +1,9 @@
+@* Components/Pages/Landing.razor *@
 @page "/"
 @using TrustedGiving.Services
 @inject NavigationManager Nav
 @inject LanguageService LangService
+@implements IDisposable
 
 <div class="landing-container">
     <div class="landing-content">
@@ -45,8 +47,18 @@
 </div>
 
 @code {
+    protected override void OnInitialized()
+    {
+        LangService.OnChange += StateHasChanged;
+    }
+
     private void GoToOrgs()
     {
         Nav.NavigateTo("/orgs");
+    }
+
+    public void Dispose()
+    {
+        LangService.OnChange -= StateHasChanged;
     }
 }
