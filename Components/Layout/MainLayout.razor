@@ -1,17 +1,39 @@
 ﻿@inherits LayoutComponentBase
+@inject ThemeService ThemeService
+@inject LanguageService LangService
+@using TrustedGiving.Services
+@implements IDisposable
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+<div class="app-shell @ThemeService.Theme" dir="@LangService.Direction">
+    <div class="top-bar">
+        <span class="app-brand">Trusted Giving</span>
+        <div class="top-bar-actions">
+            <button class="toggle-btn" @onclick="ToggleLang">
+                @(LangService.IsHebrew ? "EN" : "עב")
+            </button>
+            <button class="toggle-btn" @onclick="ToggleTheme">
+                @(ThemeService.IsDark ? "☀️" : "🌙")
+            </button>
         </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+    </div>
+    <div class="main-content">
+        @Body
+    </div>
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        ThemeService.OnChange += StateHasChanged;
+        LangService.OnChange += StateHasChanged;
+    }
+
+    private void ToggleTheme() => ThemeService.Toggle();
+    private void ToggleLang() => LangService.Toggle();
+
+    public void Dispose()
+    {
+        ThemeService.OnChange -= StateHasChanged;
+        LangService.OnChange -= StateHasChanged;
+    }
+}

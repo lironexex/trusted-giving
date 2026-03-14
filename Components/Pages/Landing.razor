@@ -1,0 +1,52 @@
+@page "/"
+@using TrustedGiving.Services
+@inject NavigationManager Nav
+@inject LanguageService LangService
+
+<div class="landing-container">
+    <div class="landing-content">
+        <div class="logo-circle">
+            <span class="logo-heart">🤝</span>
+        </div>
+        
+        <h1 class="landing-title">Trusted Giving</h1>
+        <h2 class="landing-subtitle">@LangService.Get("תרומות שמשנות חיים", "Donations that change lives")</h2>
+        
+        <p class="landing-description">
+            @LangService.Get("גלה אלפי עמותות ישראליות,", "Discover thousands of Israeli nonprofits,")<br />
+            @LangService.Get("קרא ביקורות, ותרום למטרות", "read reviews, and donate to causes")<br />
+            @LangService.Get("שחשובות לך", "that matter to you")
+        </p>
+
+        <div class="landing-stats">
+            <div class="stat">
+                <span class="stat-number">74K+</span>
+                <span class="stat-label">@LangService.Get("עמותות", "Nonprofits")</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+                <span class="stat-number">100%</span>
+                <span class="stat-label">@LangService.Get("שקיפות", "Transparency")</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+                <span class="stat-number">∞</span>
+                <span class="stat-label">@LangService.Get("השפעה", "Impact")</span>
+            </div>
+        </div>
+
+        <button class="cta-button" @onclick="GoToOrgs">
+            @LangService.Get("בחר את המטרה שלך", "Choose your cause")
+            <span class="cta-arrow">←</span>
+        </button>
+
+        <p class="landing-footer">@LangService.Get("מבוסס על נתוני רשם העמותות הרשמי", "Based on official nonprofit registry data")</p>
+    </div>
+</div>
+
+@code {
+    private void GoToOrgs()
+    {
+        Nav.NavigateTo("/orgs");
+    }
+}

@@ -26,6 +26,8 @@ namespace trusted_giving
             builder.Services.AddHttpClient<AmutaService>();
             builder.Services.AddScoped<AmutaService>();
             builder.Services.AddMudServices();
+            builder.Services.AddSingleton<ThemeService>();
+            builder.Services.AddSingleton<LanguageService>();
 
             return builder.Build();
         }
