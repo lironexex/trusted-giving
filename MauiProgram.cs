@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using MudBlazor.Services;
+using TrustedGiving.Services;
 
 namespace trusted_giving
 {
@@ -20,6 +22,10 @@ namespace trusted_giving
     		builder.Services.AddBlazorWebViewDeveloperTools();
     		builder.Logging.AddDebug();
 #endif
+
+            builder.Services.AddHttpClient<AmutaService>();
+            builder.Services.AddScoped<AmutaService>();
+            builder.Services.AddMudServices();
 
             return builder.Build();
         }

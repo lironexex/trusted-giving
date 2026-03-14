@@ -1,5 +1,96 @@
 ﻿@page "/"
+@using TrustedGiving.Models
+@using TrustedGiving.Services
+@inject AmutaService AmutaService
 
-<h1>Hello, world!</h1>
+<div class="page-container">
+    <div class="header">
+        <h1>עמותות ישראל</h1>
+        <p>מצא עמותות ותרום למטרות שחשובות לך</p>
+        <input class="search-box" type="text" placeholder="חפש עמותה..."
+               @oninput="OnSearch" value="@searchQuery" />
+    </div>
 
-Welcome to your new app.
+    @if (isLoading)
+    {
+        <div class="loading">טוען עמותות...</div>
+    }
+    else if (amutot.Count == 0)
+    {
+        <div class="empty">לא נמצאו עמותות</div>
+    }
+    else
+    {
+        <div class="org-list">
+            @foreach (var amuta in amutot)
+            {
+                <div class="org-card" @onclick="() => SelectAmuta(amuta)">
+                    <div class="org-card-header">
+                        <span class="org-name">@amuta.NameHebrew</span>
+                        <span class="org-category">@amuta.ActivityCategory</span>
+                    </div>
+                    <div class="org-card-body">
+                        <span class="org-city">📍 @amuta.City</span>
+                        @if (amuta.VolunteerCount.HasValue)
+                        {
+                            <span class="org-volunteers">🙋 @amuta.VolunteerCount מתנדבים</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="pagination">
+            <button @onclick="PrevPage" disabled="@(currentPage == 0)">◀ הקודם</button>
+            <span>עמוד @(currentPage + 1)</span>
+            <button @onclick="NextPage">הבא ▶</button>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Amuta> amutot = new();
+    private bool isLoading = true;
+    private string searchQuery = "";
+    private int currentPage = 0;
+    private const int PageSize = 20;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAmutot();
+    }
+
+    private async Task LoadAmutot()
+    {
+        isLoading = true;
+        amutot = await AmutaService.GetAmutotAsync(PageSize * 3, currentPage * PageSize * 3, searchQuery);
+        isLoading = false;
+    }
+
+    private async Task OnSearch(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? "";
+        currentPage = 0;
+        await LoadAmutot();
+    }
+
+    private async Task NextPage()
+    {
+        currentPage++;
+        await LoadAmutot();
+    }
+
+    private async Task PrevPage()
+    {
+        if (currentPage > 0)
+        {
+            currentPage--;
+            await LoadAmutot();
+        }
+    }
+
+    private void SelectAmuta(Amuta amuta)
+    {
+        // We'll navigate to detail page here later
+    }
+}
