@@ -59,24 +59,102 @@
     <MudMainContent>
         @Body
     </MudMainContent>
+
+    @* "Talk to us" FAB — fixed to bottom corner, respects RTL/LTR direction *@
+    <div style="position: fixed; bottom: 28px; @(LangService.IsHebrew ? "left: 28px" : "right: 28px"); z-index: 1000;">
+        <MudFab Color="Color.Primary"
+                StartIcon="@Icons.Material.Filled.Chat"
+                Label="@LangService.Get("דברו איתנו", "Talk to us")"
+                OnClick="OpenContact"
+                Size="Size.Large" />
+    </div>
+
+    @* Contact dialog shown when the FAB is clicked *@
+    <MudDialog @bind-IsVisible="contactOpen" Options="dialogOptions">
+        <TitleContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.Chat" Class="mr-2" />
+                @LangService.Get("דברו איתנו", "Talk to us")
+            </MudText>
+        </TitleContent>
+        <DialogContent>
+            <MudText Class="mb-4" Style="opacity: 0.7">
+                @LangService.Get("יש לכם שאלה, הצעה או משוב? נשמח לשמוע.", "Have a question, suggestion or feedback? We'd love to hear from you.")
+            </MudText>
+            <MudTextField @bind-Value="contactName"
+                          Label="@LangService.Get("שם", "Name")"
+                          Variant="Variant.Outlined"
+                          Class="mb-3" />
+            <MudTextField @bind-Value="contactEmail"
+                          Label="@LangService.Get("אימייל", "Email")"
+                          Variant="Variant.Outlined"
+                          InputType="InputType.Email"
+                          Class="mb-3" />
+            <MudTextField @bind-Value="contactMessage"
+                          Label="@LangService.Get("הודעה", "Message")"
+                          Variant="Variant.Outlined"
+                          Lines="4"
+                          Class="mb-2" />
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="CloseContact" Variant="Variant.Text">
+                @LangService.Get("ביטול", "Cancel")
+            </MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitContact">
+                @LangService.Get("שלח", "Send")
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+
 </MudLayout>
 
 @code {
-    private bool menuOpen = false;
+    // --- Constants ---
+    private static readonly DialogOptions dialogOptions = new()
+    {
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true,
+        CloseOnEscapeKey = true
+    };
 
+    // --- Fields ---
+    private bool menuOpen = false;
+    private bool contactOpen = false;
+    private string contactName = "";
+    private string contactEmail = "";
+    private string contactMessage = "";
+
+    // --- Constructor ---
     protected override void OnInitialized()
     {
         ThemeService.OnChange += StateHasChanged;
         LangService.OnChange += StateHasChanged;
     }
 
-    private void ToggleMenu() => menuOpen = !menuOpen;
-    private void ToggleTheme() => ThemeService.Toggle();
-    private void ToggleLang() => LangService.Toggle();
-
+    // --- Public methods ---
     public void Dispose()
     {
         ThemeService.OnChange -= StateHasChanged;
         LangService.OnChange -= StateHasChanged;
+    }
+
+    // --- Private methods ---
+    private void ToggleMenu() => menuOpen = !menuOpen;
+    private void ToggleTheme() => ThemeService.Toggle();
+    private void ToggleLang() => LangService.Toggle();
+
+    private void OpenContact() => contactOpen = true;
+    private void CloseContact()
+    {
+        contactOpen = false;
+        contactName = "";
+        contactEmail = "";
+        contactMessage = "";
+    }
+
+    private void SubmitContact()
+    {
+        // TODO: wire up to email / backend endpoint
+        CloseContact();
     }
 }
