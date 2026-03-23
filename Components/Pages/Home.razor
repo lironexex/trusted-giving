@@ -22,6 +22,22 @@
                   DebounceInterval="500"
                   OnDebounceIntervalElapsed="OnSearch" />
 
+    @* Category filter chips — each maps a display label to the Hebrew API value *@
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;">
+        @foreach (var filter in categoryFilters)
+        {
+            var isActive = selectedCategory == filter.ApiValue;
+            <MudChip T="string"
+                     Color="@(isActive ? Color.Primary : Color.Default)"
+                     Variant="@(isActive ? Variant.Filled : Variant.Outlined)"
+                     Size="Size.Medium"
+                     OnClick="() => OnCategorySelected(filter.ApiValue)"
+                     Style="cursor: pointer;">
+                @filter.Icon @LangService.Get(filter.LabelHebrew, filter.LabelEnglish)
+            </MudChip>
+        }
+    </div>
+
     @if (isLoading)
     {
         <div style="display: flex; justify-content: center; padding: 48px">
@@ -77,26 +93,82 @@
 </div>
 
 @code {
+    // Represents a single category filter button
+    private record CategoryFilter(string LabelHebrew, string LabelEnglish, string ApiValue, string Icon);
+
+    // Well-known mappings from Hebrew API values to friendly English labels and emojis.
+    // Any category returned by the API that isn't listed here will still appear,
+    // using its raw Hebrew value as both labels and a generic icon.
+    private static readonly Dictionary<string, (string English, string Icon)> KnownCategories = new()
+    {
+        ["דת"] = ("Religion", "🕍"),
+        ["ארגוני סנגור~ שינוי חברתי פוליטי"] = ("Advocacy", "✊"),
+        ["בריאות או הצלת חיים"] = ("Health", "❤️‍🩹"),
+        ["חינוך~ השכלה והכשרה מקצועית"] = ("Education", "📚"),
+        ["מורשת או הנצחה"] = ("Heritage", "🏛️"),
+        ["מחקר~ מדע וטכנולוגיה"] = ("Science", "🔬"),
+        ["קהילה וחברה"] = ("Community", "🏘️"),
+        ["קשרים בינלאומיים"] = ("International", "🌍"),
+        ["שיכון ופיתוח עירוני"] = ("Urban Dev", "🏗️"),
+        ["שירותי רווחה"] = ("Welfare", "🤝"),
+        ["ספורט"] = ("Sports", "⚽"),
+        ["סביבה ובעלי חיים"] = ("Environment", "🌿"),
+        ["תרבות או אמנות"] = ("Culture", "🎭"),
+    };
+
+    // Built at runtime from actual API values; starts with the "All" entry
+    private List<CategoryFilter> categoryFilters = new() { new("הכל", "All", "", "🌐") };
+
     private List<Amuta> amutot = new();
     private bool isLoading = true;
     private string searchQuery = "";
+    private string selectedCategory = "";
     private int currentPage = 0;
     private const int PageSize = 20;
 
     protected override async Task OnInitializedAsync()
     {
+        // Load real category values from the API first, then fetch the first page of results
+        await LoadCategoriesAsync();
         await LoadAmutot();
     }
 
+    // Fetches distinct סיווג פעילות ענפי values from the API and builds the filter chip list
+    private async Task LoadCategoriesAsync()
+    {
+        var apiValues = await AmutaService.GetCategoriesAsync();
+
+        categoryFilters = new List<CategoryFilter> { new("הכל", "All", "", "🌐") };
+        categoryFilters.AddRange(apiValues.Select(v =>
+        {
+            // Try exact match first, then fall back to prefix match (handles spacing/encoding variants)
+            if (!KnownCategories.TryGetValue(v, out var known))
+                known = KnownCategories.FirstOrDefault(kv => v.StartsWith(kv.Key.Split('~')[0].Trim())).Value;
+
+            var (english, icon) = known != default ? known : (v, "📌");
+            return new CategoryFilter(v, english, v, icon);
+        }));
+    }
+
+    // Loads amutot from the service, passing the active search query and category filter.
     private async Task LoadAmutot()
     {
         isLoading = true;
-        amutot = await AmutaService.GetAmutotAsync(PageSize * 3, currentPage * PageSize * 3, searchQuery);
+        amutot = await AmutaService.GetAmutotAsync(PageSize * 3, currentPage * PageSize * 3, searchQuery, selectedCategory);
         isLoading = false;
     }
 
+    // Resets to page 0 and reloads when the search query changes.
     private async Task OnSearch()
     {
+        currentPage = 0;
+        await LoadAmutot();
+    }
+
+    // Toggles the selected category: clicking an active category deselects it (shows all).
+    private async Task OnCategorySelected(string apiValue)
+    {
+        selectedCategory = selectedCategory == apiValue ? "" : apiValue;
         currentPage = 0;
         await LoadAmutot();
     }

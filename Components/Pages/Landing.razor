@@ -11,13 +11,19 @@
         <img src="images/logo_large.png" style="width: 100%; max-width: 320px; object-fit: contain; margin-bottom: 16px;" />
 
         
-        <h2 class="landing-subtitle">@LangService.Get("תרומות שמשנות חיים", "Donations that change lives")</h2>
-        
-        <p class="landing-description">
-            @LangService.Get("גלה אלפי עמותות ישראליות,", "Discover thousands of Israeli nonprofits,")<br />
-            @LangService.Get("קרא ביקורות, ותרום למטרות", "read reviews, and donate to causes")<br />
-            @LangService.Get("שחשובות לך", "that matter to you")
-        </p>
+        <div dir="@LangService.Direction" style="text-align: center;">
+    
+            <h2 class="landing-subtitle">
+                @LangService.Get("ההשפעה שלך מתחילה כאן.", "Your impact starts here.")
+            </h2>
+
+            <p class="landing-description">
+                @LangService.Get("נתינה חכמה מתחילה בשקיפות מלאה.", "Smart giving starts with full transparency.")<br />
+                @LangService.Get("וודא שהתרומה שלך מגיעה למי שבאמת זקוק לה,", "Ensure your donation reaches those who truly need it,")<br />
+                @LangService.Get("בעזרת נתונים מאומתים וביקורות מהשטח.", "using verified data and field reviews.")
+            </p>
+    
+        </div>
 
         <div class="landing-stats">
             <div class="stat">
@@ -37,7 +43,7 @@
         </div>
 
         <button class="cta-button" @onclick="GoToOrgs">
-            @LangService.Get("בחר את המטרה שלך", "Choose your cause")
+            @LangService.Get("מצא את העמותה שלך", "Find your nonprofit")
             <span class="cta-arrow">←</span>
         </button>
 
@@ -46,6 +52,7 @@
 </div>
 
 @code {
+
     protected override void OnInitialized()
     {
         LangService.OnChange += StateHasChanged;
